@@ -1,6 +1,6 @@
 {
   "name": "jumpjump",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "homepage": "https://github.com/greggman/hft-jumpjump",
   "authors": [
     "Gregg Tavares <github@greggman.com>"
@@ -21,6 +21,6 @@
     "tests"
   ],
   "dependencies": {
-    "hft-utils": "git://github.com/greggman/hft-utils#0.0.8"
+    "hft-utils": "https://github.com/greggman/hft-utils.git#0.0.9"
   }
 }
