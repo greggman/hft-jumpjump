@@ -1,0 +1,13 @@
+{
+  "name": "JumpJump",
+  "description": "A game with Jumping",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+  },
+  "happyFunTimes": {
+    "gameId": "jumpjump",
+    "apiVersion": "0.0.0",
+    "gameType": "html"
+  }
+}
