@@ -30,7 +30,18 @@
  */
 "use strict";
 
-var main = function(
+// Start the main app logic.
+requirejs(
+  [ 'hft/commonui',
+    'hft/gameclient',
+    'hft/misc/input',
+    'hft/misc/misc',
+    'hft/misc/mobilehacks',
+    'hft/misc/touch',
+    '../bower_components/hft-utils/dist/audio',
+    '../bower_components/hft-utils/dist/imageloader',
+    '../bower_components/hft-utils/dist/imageutils',
+  ], function(
     CommonUI,
     GameClient,
     Input,
@@ -134,20 +145,6 @@ var main = function(
   };
 
   ImageLoader.loadImages(images, startClient);
-};
+});
 
-// Start the main app logic.
-requirejs(
-  [ 'hft/commonui',
-    'hft/gameclient',
-    'hft/misc/input',
-    'hft/misc/misc',
-    'hft/misc/mobilehacks',
-    'hft/misc/touch',
-    '../bower_components/hft-utils/dist/audio',
-    '../bower_components/hft-utils/dist/imageloader',
-    '../bower_components/hft-utils/dist/imageutils',
-  ],
-  main
-);
 

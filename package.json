@@ -6,8 +6,8 @@
   "dependencies": {
   },
   "happyFunTimes": {
-    "category": "game",
     "gameId": "jumpjump",
+    "category": "game",
     "apiVersion": "0.0.0",
     "gameType": "html",
     "minPlayers": 1
