@@ -72,10 +72,7 @@ requirejs(
 
   var startClient = function() {
 
-    g_client = new GameClient({
-      gameId: "jumpjump",
-    });
-
+    g_client = new GameClient();
     //
     var handleScore = function() {
     };

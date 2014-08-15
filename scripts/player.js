@@ -68,10 +68,11 @@ define([
           availableColors.push(colors[ii]);
         }
       }
-      this.color = availableColors[Math.floor(Math.random() * availableColors.length)];
+      var colorNdx = Math.floor(Math.random() * availableColors.length);
+      this.color = availableColors[colorNdx];
 window.p = this;
       netPlayer.sendCmd('setColor', this.color);
-      availableColors.splice(this.color, 1);
+      availableColors.splice(colorNdx, 1);
       this.color.id;
       this.animTimer = 0;
       this.width = width;
