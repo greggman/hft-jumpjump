@@ -70,7 +70,6 @@ window.s = g_services;
   // You can set these from the URL with
   // http://path/gameview.html?settings={name:value,name:value}
   var globals = {
-    port: 8080,
     haveServer: true,
     numLocalPlayers: 1,  // num players when local (ie, debugger)
     debug: false,
