@@ -27,12 +27,5 @@ If you clone this you'll need follow the following steps
 6.  type `hft add` which will add this to happyFunTimes.
 
 
-Non-Demo
---------
-
-Since the whole point is to play with 10-30 people on phones this isn't really a demo
-but you can see it with 1 player here. Use the arrow keys to steer and 'z' to jump.
-
-[click here for non-demo](http://greggman.github.io/hft-jumpjump/local.html?settings={haveServer:false,numLocalPlayers:3})
 
 
