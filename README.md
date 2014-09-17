@@ -28,6 +28,22 @@ If you clone this you'll need follow the following steps
 7.  edit `package.json` and change the `gameId` to some other id.
 8.  type `hft add` which will add this to happyFunTimes.
 
+Attribution
+-----------
+
+Bird
+
+Name:Nooks
+
+Link: http://forums.tigsource.com/index.php?topic=9353.0
+
+Bricks
+
+Name: SpiderDave
+
+Link: http://opengameart.org/content/bricks-tilable
+
+
 
 
 
