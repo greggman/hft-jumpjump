@@ -311,7 +311,7 @@ window.g = globals;
     g_services.entitySystem.processEntities();
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    gl.clear(gl.CLEAR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     g_services.levelManager.draw();
     g_services.drawSystem.processEntities();
     g_services.spriteManager.draw();
