@@ -215,8 +215,6 @@ window.p = this;
 
   Player.prototype.updatePosition = function(axis, elapsedTime) {
     var axis = axis || 3;
-    this.lastPosition[0] = this.position[0];
-    this.lastPosition[1] = this.position[1];
     if (axis & 1) {
       this.position[0] += this.velocity[0] * elapsedTime;
     }
@@ -244,6 +242,8 @@ window.p = this;
     this.timeAccumulator += globals.elapsedTime;
     var ticks = (this.timeAccumulator / kOneTick) | 0;
     this.timeAccumulator -= ticks * kOneTick;
+    this.lastPosition[0] = this.position[0];
+    this.lastPosition[1] = this.position[1];
     for (var ii = 0; ii < ticks; ++ii) {
       this.updateVelocity(axis, kOneTick);
       this.updatePosition(axis, kOneTick);

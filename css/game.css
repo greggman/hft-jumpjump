@@ -63,19 +63,51 @@ html, body {
 }
 #score {
   background-color: rgb(39, 93, 136);
-  padding: 0.5em;
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto;
   width: 16em;
   overflow: hidden;
+  color: white;
+  font-family: sans-serif;
+  font-size: 20px;
+  font-weight: bold;
 }
+
 #score>div { /* line */
+  padding: 1.0em;
+  position: relative;
 }
-#score>div>div { /* info */
+
+#score>div:nth-child(2n) { /* line */
+  background-color: rgb(29, 53, 86);
 }
-#score>div>span { /* img */
+
+#score .avatar { /* info */
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
+
+#score .info {
+  display: inline-block;
+  position: absolute;
+  left: 50px;
+  top: 10px;
+}
+
+#score canvas {
+  position: absolute;
+  top: 4px;
+  left: 10px;
+}
+
+#score .name {
+  padding-left: 0.5em;
+}
+
 #outer {
   z-index: 4;
   left: 0px;

@@ -32,109 +32,89 @@
 
 define([
     'hft/misc/misc',
-    '../bower_components/hft-utils/dist/tilemap',
-  ], function(Misc, TileMap) {
-
-  var charToTileId = {
-    ' ': { tileId: 0x0001, },
-    '#': { tileId: 0x0002, },
-  };
-
-  var Level = function(tileset, width, height, tiles) {
-    this.width = width + 2;
-    this.height = height + 2;
-    this.tileWidth = tileset.tileWidth;
-    this.tileHeight = tileset.tileHeight;
-    this.levelWidth = this.width * this.tileWidth;
-    this.levelHeight = this.height * this.tileHeight;
-    this.outOfBoundsTile = charToTileId['#'].tileId;
-    if (typeof(tiles) == 'string') {
-      var t = [];
-      // Add top line
-      for (var ii = 0; ii < this.width; ++ii) {
-        t.push(this.outOfBoundsTile);
-      }
-      // Add lines of original plus abounds
-      for (var yy = 0; yy < height; ++yy) {
-        t.push(this.outOfBoundsTile);
-        for (var xx = 0; xx < width; ++xx) {
-          t.push(charToTileId[tiles.substr(yy * width + xx, 1)].tileId);
-        }
-        t.push(this.outOfBoundsTile);
-      }
-      // Add bottom line
-      for (var ii = 0; ii < this.width; ++ii) {
-        t.push(this.outOfBoundsTile);
-      }
-      tiles = t;
-    }
-
-    this.tiles = new Uint32Array(tiles);
-    this.uint8view = new Uint8Array(this.tiles.buffer);
-    this.uint16view = new Uint16Array(this.tiles.buffer);
-    this.tilemap = new TileMap({
-      mapTilesAcross: this.width,
-      mapTilesDown: this.height,
-      tilemap: this.uint8view,
-      tileset: tileset,
-    });
-
-    this.tileDrawOptions = {
-      x: 0,
-      y: 0,
-      width:  this.width  * this.tileWidth ,
-      height: this.height * this.tileHeight,
-      canvasWidth: 0, //this.canvas.width,
-      canvasHeight: 0, //this.canvas.height,
-      scrollX: 0,
-      scrollY: 0,
-      rotation: 0,
-      scaleX: 1,
-      scaleY: 1,
-      originX: 0,
-      originY: 0,
-    };
-  };
-
-  Level.prototype.getTile = function(tileX, tileY) {
-    if (tileX >= 0 && tileX < this.width &&
-        tileY >= 0 && tileY < this.height) {
-      return this.uint16view[(tileY * this.width + tileX) * 2];
-    }
-    return this.outOfBoundsTile;
-  };
-
-  Level.prototype.getTileByPixel = function(x, y) {
-    var tileX = Math.floor(x / this.tileWidth);
-    var tileY = Math.floor(y / this.tileHeight);
-    return this.getTile(tileX, tileY);
-  };
-
-  Level.prototype.getDrawOffset = function(obj) {
-    obj.x = ((gl.canvas.width  - this.levelWidth ) / 2) | 0;
-    obj.y = ((gl.canvas.height - this.levelHeight) / 2) | 0;
-  };
-
-  Level.prototype.draw = function(levelManager) {
-    if (this.dirty) {
-      this.tilemap.uploadTilemap();
-      this.dirty = false;
-    }
-
-    var opt = this.tileDrawOptions;
-    this.getDrawOffset(opt);
-    opt.canvasWidth = gl.canvas.width;
-    opt.canvasHeight = gl.canvas.height;
-    this.tilemap.draw(opt);
-  };
+    './level',
+    './math',
+    './tiles',
+  ], function(
+    Misc,
+    Level,
+    gmath,
+    Tiles) {
 
   var levels = [];
 
+  var meaningTable = [];
+  meaningTable[0x0001] = 0;
+  meaningTable[0x0002] = 1;
+  meaningTable[0x0100] = 0x20;
+  meaningTable[0x0101] = 0x21;
+  meaningTable[0x0102] = 0x22;
+  meaningTable[0x0103] = 0x23;
+  meaningTable[0x0200] = 0x30;
+  meaningTable[0x0201] = 0x31;
+  meaningTable[0x0202] = 0x32;
+  meaningTable[0x0203] = 0x33;
+  meaningTable[0x0300] = 0x40;
+  meaningTable[0x0301] = 0x41;
+  meaningTable[0x0400] = 0x50;
+  meaningTable[0x0401] = 0x51;
+
+  for (var ii = 0; ii < meaningTable.length; ++ii) {
+    if (meaningTable[ii] === undefined) {
+      meaningTable[ii] = 0;
+    }
+  }
+
   var initLevels = function(tileset) {
-    levels.push(new Level(
-      tileset,
-      20, 10,
-      [ // 01234567890123456789
+    levels.push(new Level({
+      meaningTable: meaningTable,
+      tileset: tileset,
+      width:   10,
+      height:  15,
+      border: true,
+      tiles:   [ // 01234567890123456789
+          "          ", // 0
+          "          ", // 1
+          "          ", // 2
+          " ###      ", // 3
+          "          ", // 4
+          "#      ###", // 5
+          "          ", // 6
+          "          ", // 7
+          "   ###    ", // 8
+          "          ", // 9
+          "          ", // 10
+          " ##   ##  ", // 11
+          "     #### ", // 12
+          "    ##### ", // 13
+          "#  #######", // 14
+      ].join("")}));
+
+//    tiles:   [ // 01234567890123456789
+//        " YYY      ", // 0
+//        "          ", // 1
+//        "          ", // 2
+//        " ###      ", // 3
+//        "       A 1", // 4
+//        "#      ###", // 5
+//        "       ZZZ", // 6
+//        "          ", // 7
+//        "   ###    ", // 8
+//        "          ", // 9
+//        " B        ", // 10
+//        " ##   ##  ", // 11
+//        "    9#### ", // 12
+//        "0   ##### ", // 13
+//        "# 8###### ", // 14
+//    ].join("")}));
+
+    levels.push(new Level({
+      meaningTable: meaningTable,
+      tileset: tileset,
+      width:   20,
+      height:  10,
+      border: true,
+      tiles:   [ // 01234567890123456789
           "                    ", // 0
           "                    ", // 1
           "                    ", // 2
@@ -143,14 +123,16 @@ define([
           "                    ", // 5
           "     ####      ##   ", // 6
           "              ####  ", // 7
-          " #           ###### ", // 8
+          "0#           ######1", // 8
           "###         ########", // 9
-      ].join("")));
+      ].join("")}));
 
-    levels.push(new Level(
-      tileset,
-      30, 15,
-      [ // 012345678901234567890123456789
+    levels.push(new Level({
+      meaningTable: meaningTable,
+      tileset: tileset,
+      width:   30,
+      height:  15,
+      tiles:   [ // 012345678901234567890123456789
           "                              ", // 0
           "                              ", // 1
           "                              ", // 2
@@ -159,19 +141,20 @@ define([
           "                              ", // 5
           "     ####                     ", // 6
           "             ##########       ", // 7
-          " #                            ", // 8
+          "0#                            ", // 8
           "###                           ", // 9
           "#####                 ###     ", //
           "#######              #####    ", //
           "########            #######   ", //
           "#####      ###     #########  ", //
-          "###               ########### ", //
-      ].join("")));
+          "###               ###########1", //
+      ].join("")}));
 
-    levels.push(new Level(
-      tileset,
-      40, 20,
-      [ // 0123456789012345678901234567890123456789
+    levels.push(new Level({
+      tileset: tileset,
+      width:   40,
+      height:  20,
+      tiles:   [ // 0123456789012345678901234567890123456789
           "                                        ", // 0
           "                                        ", // 1
           "                                        ", // 2
@@ -180,7 +163,7 @@ define([
           "                                        ", // 5
           "     ####      ##                       ", // 6
           "                      #####             ", // 7
-          "                                        ", // 8
+          "0                                       ", // 8
           "###    ########                         ", // 9
           "                           #####        ", //
           "                                        ", //
@@ -191,82 +174,157 @@ define([
           "                           ###          ", //
           "  #    ########          #######        ", //
           " ###                   ###########      ", //
-          "#####                ################   ", //
-      ].join("")));
+          "#####                ################  1", //
+      ].join("")}));
   };
 
-  var tileInfoSky = {
-    collisions: false,
-  };
-
-  var tileInfoWall = {
-    collisions: true,
-    color: "white",
-    imgName: "brick",
-  };
-
-  var tileInfoMap = {};
-  tileInfoMap[charToTileId[' '].tileId] = tileInfoSky;
-  tileInfoMap[charToTileId['#'].tileId] = tileInfoWall;
-
-  var LevelManager = function(services, tileset) {
+  var LevelManager = function(services, tileset, options) {
+    options = options || {};
     this.services = services;
     this.tileset = tileset;
-
+    this.offEdgeTileId = options.offEdgeTileId !== undefined ? options.offEdgeTileId : 13;
+    this.offTopBottomTileID = options.offTopBottomTileId !== undefined ? options.offTopBottomTileId : 1;
     initLevels(tileset);
   };
 
-  LevelManager.prototype.reset = function(canvasWidth, canvasHeight) {
+  LevelManager.prototype.reset = function(canvasWidth, canvasHeight, level) {
     // pick the largest level that fits
-    var largestLevel = levels[0];
-    var largestSize = 0;
-    for (var ii = 0; ii < levels.length; ++ii) {
-      var level = levels[ii];
-      var hSpace = canvasWidth  - level.levelWidth;
-      var vSpace = canvasHeight - level.levelHeight;
-      if (hSpace >= 0 && vSpace >= 0) {
-        var size = level.levelWidth * level.levelHeight;
-        if (size > largestSize) {
-          largestSize = size;
-          largestLevel = level;
+    if (!level) {
+      var largestLevel = levels[0];
+      var largestSize = 0;
+      for (var ii = 0; ii < levels.length; ++ii) {
+        var level = levels[ii];
+        var hSpace = canvasWidth  - level.levelWidth;
+        var vSpace = canvasHeight - level.levelHeight;
+        if (hSpace >= 0 && vSpace >= 0) {
+          var size = level.levelWidth * level.levelHeight;
+          if (size > largestSize) {
+            largestSize = size;
+            largestLevel = level;
+          }
         }
       }
+      level = largestLevel;
     }
-    this.level = largestLevel;
-    this.level.needsUpdate = true;
+
+    // find the desinations
+
+    this.level = level;
+    level.setup(this);
+    this.level.dirty = true;
   };
 
   LevelManager.prototype.getTileInfo = function(tileId) {
-    return tileInfoMap[tileId];
+    if (this.level.meaningTable) {
+      tileId = this.level.meaningTable[tileId];
+    }
+    return Tiles.getInfo(tileId);
   };
 
   LevelManager.prototype.getTileInfoByPixel = function(x, y) {
+    if (y < 0 || y >= this.level.levelHeight) {
+      return Tiles.getInfo(this.offTopBottomTileID);
+    } else if (x < 0) {
+      var tileId = this.level.getTileByPixel(0, y);
+      var info = this.getTileInfo(tileId);
+      return info.collisions ? info : Tiles.getInfo(this.offEdgeTileId);
+    } else if (x >= this.level.levelWidth) {
+      var tileId = this.level.getTileByPixel(this.level.levelWidth - 1, y);
+      var info = this.getTileInfo(tileId);
+      return info.collisions ? info : Tiles.getInfo(this.offEdgeTileId);
+    }
     var tileId = this.level.getTileByPixel(x, y);
     return this.getTileInfo(tileId);
   }
 
-  LevelManager.prototype.draw = function() {
-    this.level.draw(this);
+  LevelManager.prototype.draw = function(options) {
+    this.level.draw(this, options);
   };
 
   LevelManager.prototype.getLevel = function() {
     return this.level;
   };
 
+  LevelManager.prototype.getGroundHeight = function(x, y, tile) {
+    if (!tile) {
+      tile = this.getTileInfoByPixel(x, y);
+    }
+    if (!tile || !tile.collisions || !tile.udCollision) {
+      return;
+    }
+    var level = this.level;
+    var xPixel = Math.floor(gmath.emod(x, level.tileWidth));
+    var tileY = gmath.unitdiv(y, level.tileHeight) * level.tileHeight;
+    var off = tile.udCollision[xPixel];
+    return off >= 0 ? tileY + off : undefined;
+  };
+
+  LevelManager.prototype.getCeilingHeight = function(x, y, tile) {
+    if (!tile) {
+      tile = this.getTileInfoByPixel(x, y);
+    }
+    if (!tile || !tile.collisions || !tile.duCollision) {
+      return;
+    }
+    var level = this.level;
+    var xPixel = Math.floor(gmath.emod(x, level.tileWidth));
+    var tileY = gmath.unitdiv(y, level.tileHeight) * level.tileHeight;
+    var off = tile.duCollision[xPixel];
+    return off >= 0 ? tileY + off : undefined;
+  };
+
+  LevelManager.prototype.getWallPosition = function(x, y, right, tile) {
+    if (!tile) {
+      tile = this.getTileInfoByPixel(x, y);
+    }
+    if (!tile || !tile.collisions) {
+      return;
+    }
+
+    var level = this.level;
+    var yPixel = Math.floor(gmath.emod(y, level.tileHeight));
+    var tileX = gmath.unitdiv(x, level.tileWidth) * level.tileWidth;
+    if (right) {
+      if (tile.rlCollision) {
+        var off = tile.rlCollision[yPixel];
+        if (off >= 0) {
+          return tileX + off ;
+        }
+      }
+    } else {
+      if (tile.lrCollision) {
+        var off = tile.lrCollision[yPixel];
+        if (off >= 0) {
+          return tileX + off;
+        }
+      }
+    }
+  };
+
+
   LevelManager.prototype.getDrawOffset = function(obj) {
     this.level.getDrawOffset(obj);
   };
 
   LevelManager.prototype.getRandomOpenPosition = function() {
+    var count = 0;
     var level = this.level;
     var found = false;
     while (!found) {
-      var x = (2 + Misc.randInt(level.width  - 4)) * level.tileWidth;
-      var y = (2 + Misc.randInt(level.height - 4)) * level.tileHeight;
-      var tile = this.getTileInfoByPixel(x, y);
-      found = !tile.collisions;
+      if (++count > 10000) {
+        throw("something's wrong with level data");
+      }
+      var x = (2 + Misc.randInt(level.width  - 4));
+      var y = (2 + Misc.randInt(level.height - 4));
+      var tile = this.getTileInfoByPixel(
+        x * level.tileWidth,
+        y * level.tileHeight);
+      found = tile.open;
     }
-    return {x: x, y: y};
+    return {
+      x: (x + 0.5) * level.tileWidth,
+      y: (y +   1) * level.tileHeight - 1,
+    };
   };
 
   return LevelManager;
