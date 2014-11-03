@@ -178,37 +178,16 @@ define([
       ].join("")}));
   };
 
-  var LevelManager = function(services, tileset, options) {
+  var LevelManager = function(services, /* tileset, */ options) {
     options = options || {};
     this.services = services;
-    this.tileset = tileset;
+//    this.tileset = tileset;
     this.offEdgeTileId = options.offEdgeTileId !== undefined ? options.offEdgeTileId : 13;
     this.offTopBottomTileID = options.offTopBottomTileId !== undefined ? options.offTopBottomTileId : 1;
-    initLevels(tileset);
+//    initLevels(tileset);
   };
 
   LevelManager.prototype.reset = function(canvasWidth, canvasHeight, level) {
-    // pick the largest level that fits
-    if (!level) {
-      var largestLevel = levels[0];
-      var largestSize = 0;
-      for (var ii = 0; ii < levels.length; ++ii) {
-        var level = levels[ii];
-        var hSpace = canvasWidth  - level.levelWidth;
-        var vSpace = canvasHeight - level.levelHeight;
-        if (hSpace >= 0 && vSpace >= 0) {
-          var size = level.levelWidth * level.levelHeight;
-          if (size > largestSize) {
-            largestSize = size;
-            largestLevel = level;
-          }
-        }
-      }
-      level = largestLevel;
-    }
-
-    // find the desinations
-
     this.level = level;
     level.setup(this);
     this.level.dirty = true;

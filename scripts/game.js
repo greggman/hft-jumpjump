@@ -34,24 +34,51 @@ function $(id) {
   return document.getElementById(id);
 }
 
-var main = function(
+// Start the main app logic.
+requirejs(
+  [ 'hft/gameserver',
+    'hft/gamesupport',
+    'hft/localnetplayer',
+    'hft/misc/input',
+    'hft/misc/misc',
+    'hft/misc/strings',
+    '../bower_components/tdl/tdl/textures',
+    '../bower_components/tdl/tdl/webgl',
+    '../bower_components/hft-utils/dist/audio',
+    '../bower_components/hft-utils/dist/entitysystem',
+    '../bower_components/hft-utils/dist/imageloader',
+    '../bower_components/hft-utils/dist/imageutils',
+    '../bower_components/hft-utils/dist/levelloader',
+    '../bower_components/hft-utils/dist/spritemanager',
+    './collectable',
+    './level',
+    './levelmanager',
+    './particleeffectmanager',
+    './particlesystemmanager',
+    './playermanager',
+    './scoremanager',
+  ], function(
     GameServer,
     GameSupport,
     LocalNetPlayer,
     Input,
     Misc,
+    Strings,
     Textures,
     WebGL,
     AudioManager,
     EntitySystem,
     ImageLoader,
     ImageUtils,
+    LevelLoader,
     SpriteManager,
     Collectable,
+    Level,
     LevelManager,
+    ParticleEffectManager,
+    ParticleSystemManager,
     PlayerManager,
     ScoreManager) {
-
   var g_debug = false;
   var g_services = {};
 window.s = g_services;
@@ -88,6 +115,14 @@ window.s = g_services;
     coinAnimSpeed: 10,
     jumpFirstFrameTime: 0.1,
     fallTopAnimVelocity: 100,
+    drawOffset: {},
+    scale: 1,
+    levels: [
+      { width: 10, height: 15, url: "assets/levels/level10x15.json", },
+      { width: 20, height: 10, url: "assets/levels/level20x10.json", },
+      { width: 30, height: 15, url: "assets/levels/level30x15.json", },
+      { width: 40, height: 20, url: "assets/levels/level40x20.json", },
+    ],
   };
 window.g = globals;
 
@@ -176,24 +211,36 @@ window.g = globals;
   var canvas = $("playfield");
   var gl = WebGL.setupWebGL(canvas, {alpha:false}, function() {});
   g_services.spriteManager = new SpriteManager();
+  g_services.particleSystemManager = new ParticleSystemManager(2);
+
+  var chooseLevel = function(levels, maxWidth, maxHeight) {
+    // pick the largest level that fits
+    var largestLevel = levels[0];
+    var largestSize = 0;
+    levels.forEach(function(level) {
+      var hSpace = maxWidth  - level.width  * 32;
+      var vSpace = maxHeight - level.height * 32;
+      if (hSpace >= 0 && vSpace >= 0) {
+        var size = level.width * level.height;
+        if (size > largestSize) {
+          largestSize = size;
+          largestLevel = level;
+        }
+      }
+    });
+    return largestLevel;
+  };
+
 
   var resize = function() {
     if (Misc.resize(canvas)) {
-      g_services.levelManager.reset(canvas.width, canvas.height);
-      g_services.playerManager.forEachPlayer(function(player) {
-        player.reset();
-      });
+      var level = chooseLevel(globals.levels, canvas.clientWidth, canvas.clientHeight);
+      if (level !== globals.chosenLevel) {
+        window.location.reload();
+      }
     }
   };
   g_services.globals = globals;
-
-  var server;
-  if (globals.haveServer) {
-    var server = new GameServer();
-    g_services.server = server;
-    server.addEventListener('playerconnect', g_playerManager.startPlayer.bind(g_playerManager));
-  }
-  GameSupport.init(server, globals);
 
   if (globals.tileInspector) {
     var element = document.createElement("div");
@@ -240,7 +287,7 @@ window.g = globals;
     idle:  { url: "assets/spr_idle.png",  colorize: 32, scale: 2, slices: 16, },
     move:  { url: "assets/spr_run.png",   colorize: 32, scale: 2, slices: 16, },
     jump:  { url: "assets/spr_jump.png",  colorize: 32, scale: 2, slices: [16, 17, 17, 18, 16, 16] },
-    brick: { url: "assets/bricks.png",    colorize:  1, scale: 2, slices: 48, },
+//    brick: { url: "assets/bricks.png",    colorize:  1, scale: 2, slices: 48, },
     coin:  { url: "assets/coin_anim.png", colorize:  1, scale: 4, slices: 8, },
   };
   var colors = [];
@@ -284,37 +331,132 @@ window.g = globals;
       }
     });
 
-    var tileset = {
-      tileWidth: 32,
-      tileHeight: 32,
-      tilesAcross: 3,  // tiles across set
-      tilesDown: 1,    // tiles across set
-      texture: images.brick.colors[0][0],
+    var realImageMappings = {
+      "assets/tilesets/bricks.png": "assets/tilesets/bricks-real.png",
     };
-    var g_levelManager = new LevelManager(g_services, tileset);
-    g_services.levelManager = g_levelManager;
-    resize();
+    var loaderOptions = {
+      imageMappings: globals.debug ? {} : realImageMappings,
+    };
+    globals.chosenLevel = chooseLevel(globals.levels, canvas.clientWidth, canvas.clientHeight);
+    LevelLoader.load(gl, globals.chosenLevel.url, loaderOptions, function(err, level) {
+      if (err) {
+        throw err;
+      }
+      level.layers = level.layers.map(function(layer) {
+        return new Level(layer);
+      });
+      globals.level = level;
 
-    // Add a 2 players if there is no communication
-    if (!globals.haveServer) {
-      startLocalPlayers();
+      // Figure out which level is the play one.
+      var playLevel;
+      globals.level.layers.forEach(function(layer) {
+        if (layer.name == "Tile Layer 1" ||
+            Strings.startsWith(layer.name.toLowerCase(), "play")) {
+          playLevel = layer;
+        }
+      });
+      if (!playLevel) {
+        playLevel = globals.level.layers[globals.level.layers.length / 2 | 0];
+      }
+      globals.playLevel = playLevel;
+
+      startGame();
+    });
+
+    var resetGame = function() {
+      g_services.levelManager.reset(canvas.width, canvas.height, globals.playLevel);
+      g_services.playerManager.forEachPlayer(function(player) {
+        player.reset();
+      });
+      if (globals.coin) {
+        globals.coin.reset();
+      }
+    };
+
+    function startGame() {
+      var g_levelManager = new LevelManager(g_services);
+      g_services.levelManager = g_levelManager;
+
+      resetGame();
+      resize();
+
+      // Add a 2 players if there is no communication
+      if (!globals.haveServer) {
+        startLocalPlayers();
+      }
+
+      g_services.particleEffectManager = new ParticleEffectManager(g_services);
+      globals.coin = new Collectable(g_services);
+
+      var server;
+      if (globals.haveServer) {
+        var server = new GameServer();
+        g_services.server = server;
+        server.addEventListener('playerconnect', g_playerManager.startPlayer.bind(g_playerManager));
+      }
+      GameSupport.init(server, globals);
+      GameSupport.run(globals, mainloop);
     }
-
-    new Collectable(g_services);
-    GameSupport.run(globals, mainloop);
   };
 
   ImageLoader.loadImages(images, processImages);
 
   var mainloop = function() {
     resize();
+    g_services.levelManager.getDrawOffset(globals.drawOffset);
     g_services.entitySystem.processEntities();
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clearColor(0.15, 0.15, 0.15, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    g_services.levelManager.draw({ scale: 1 });
+    var level = g_services.levelManager.getLevel();
+    var xtraX = ((gl.canvas.width  - level.levelWidth ) / 2 | 0);
+    var xtraY = ((gl.canvas.height - level.levelHeight) / 2 | 0);
+    gl.scissor(xtraX, xtraY, level.levelWidth, level.levelHeight);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.clearColor(
+        globals.level.backgroundColor[0],
+        globals.level.backgroundColor[1],
+        globals.level.backgroundColor[2],
+        globals.level.backgroundColor[3]);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.disable(gl.SCISSOR_TEST);
+    gl.disable(gl.BLEND);
+
+
+    var layerNdx = 0;
+    var layers    = globals.level.layers;
+    var numLayers = layers.length;
+    if (globals.playLevel) {
+      // Draw all layers before and including playLevel
+      for (; layerNdx < numLayers && layer !== globals.playLevel; ++layerNdx) {
+        var layer = layers[layerNdx];
+        if (layer === globals.playLevel) {
+          g_services.particleSystemManager.drawParticleSystemBehindLevel(globals.drawOffset);
+          gl.disable(gl.BLEND);
+        }
+        layer.draw(g_services.levelManager, globals);
+      }
+    }
+    g_services.particleSystemManager.drawParticleSystemBehindPlayer(globals.drawOffset);
     g_services.drawSystem.processEntities();
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendEquation(gl.FUNC_ADD);
     g_services.spriteManager.draw();
+    gl.disable(gl.BLEND);
+
+    if (globals.playLevel) {
+      // Draw the remaining layers
+      for(; layerNdx < numLayers; ++layerNdx) {
+        var layer = layers[layerNdx];
+        layer.draw(g_services.levelManager, globals);
+      }
+    }
+    g_services.particleSystemManager.drawParticleSystemInFrontOfPlayer(globals.drawOffset);
+
+
     g_services.scoreManager.update();
   };
 
@@ -327,28 +469,6 @@ window.g = globals;
   };
   var audioManager = new AudioManager(sounds);
   g_services.audioManager = audioManager;
-};
-
-// Start the main app logic.
-requirejs(
-  [ 'hft/gameserver',
-    'hft/gamesupport',
-    'hft/localnetplayer',
-    'hft/misc/input',
-    'hft/misc/misc',
-    '../bower_components/tdl/tdl/textures',
-    '../bower_components/tdl/tdl/webgl',
-    '../bower_components/hft-utils/dist/audio',
-    '../bower_components/hft-utils/dist/entitysystem',
-    '../bower_components/hft-utils/dist/imageloader',
-    '../bower_components/hft-utils/dist/imageutils',
-    '../bower_components/hft-utils/dist/spritemanager',
-    './collectable',
-    './levelmanager',
-    './playermanager',
-    './scoremanager',
-  ],
-  main
-);
+});
 
 

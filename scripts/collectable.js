@@ -43,7 +43,6 @@ define([
   var Collectable = (function() {
     return function(services) {
       this.services = services;
-      this.renderer = services.renderer;
 
       services.entitySystem.addEntity(this);
       services.drawSystem.addEntity(this);
@@ -64,10 +63,14 @@ define([
         this.sprites.push(sprite);
       }
 
-      this.chooseNewPosition();
-      this.setState("fall");
+      this.reset();
     };
   }());
+
+  Collectable.prototype.reset = function() {
+    this.chooseNewPosition();
+    this.setState("fall");
+  };
 
   Collectable.prototype.setState = function(state) {
     this.state = state;
@@ -175,7 +178,7 @@ define([
   Collectable.prototype.chooseNewPosition = function() {
     var levelManager = this.services.levelManager;
     var position = levelManager.getRandomOpenPosition();
-    this.position = [position.x + this.width / 2, position.y];
+    this.position = [position.x, position.y];
     this.velocity = [0, 0];
     this.falling = true;
   };

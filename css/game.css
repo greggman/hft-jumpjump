@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 html, body {
-  background-color: yellow;
+  background-color: #000;
 }
 #visual {
   position: absolute;
@@ -61,8 +61,12 @@ html, body {
   -webkit-flex: 1 0 auto;
   flex: 1 0 auto;
 }
+#playfield canvas {
+    width: 100%;
+    height 100%;
+}
+
 #score {
-  background-color: rgb(39, 93, 136);
   -webkit-box-flex: 0;
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto;
@@ -77,6 +81,7 @@ html, body {
 #score>div { /* line */
   padding: 1.0em;
   position: relative;
+  background-color: rgb(39, 93, 136);
 }
 
 #score>div:nth-child(2n) { /* line */

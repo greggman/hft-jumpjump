@@ -122,7 +122,7 @@ window.p = this;
     var levelManager = this.services.levelManager;
     var level = levelManager.getLevel();
     var position = levelManager.getRandomOpenPosition();
-    this.position = [position.x + level.tileWidth / 2, position.y];
+    this.position = [position.x, position.y];
     this.lastPosition = [this.position[0], this.position[1]];
   };
 
@@ -331,6 +331,7 @@ window.p = this;
         if (!this.bonked) {
           this.bonked = true;
           this.services.audioManager.playSound('bonkhead');
+          this.services.particleEffectManager.spawnBonk(this.position[0], this.position[1] - this.height);
         }
         return true;
       }
@@ -466,7 +467,7 @@ window.p = this;
     var nameSprite = this.nameSprite;
     nameSprite.uniforms.u_texture = this.nameImage;
     nameSprite.x = (off.x + this.position[0]) | 0;
-    nameSprite.y = (off.y + height / -2 + this.position[1] - 24) | 0;
+    nameSprite.y = (off.y + height / -2 + this.position[1] - 28) | 0;
     nameSprite.width = this.nameImage.img.width;
     nameSprite.height = this.nameImage.img.height;
   };

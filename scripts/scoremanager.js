@@ -106,20 +106,9 @@ define(function() {
 
   ScoreManager.prototype.createElement = function() {
     var line = document.createElement("div");
-//    line.style.position = "relative";
-//    line.style.height = "40px";
-//    line.style.display = "block";
     var span = document.createElement("div");
     span.className = "avatar";
-//    span.style.width = "32px";
-//    span.style.height = "32px";
-//    span.style.position = "absolute";
-//    span.style.top = "0px";
-//    span.style.left = "0px";
     var img = document.createElement("canvas");
-//    img.style.position = "absolute";
-//    img.style.top = "0px";
-//    img.style.left = "0px";
     img.width = 32;
     img.height = 32;
     var ctx = img.getContext("2d");
