@@ -65,6 +65,16 @@ requirejs(
   };
   Misc.applyUrlSettings(globals);
   MobileHacks.fixHeightHack();
+  MobileHacks.adjustCSSBasedOnPhone([
+    {
+      test: MobileHacks.isIOS8OrNewerAndiPhone4OrIPhone5,
+      styles: {
+        ".button": {
+          bottom: "100px",
+        },
+      },
+    },
+  ]);
 
   function $(id) {
     return document.getElementById(id);
