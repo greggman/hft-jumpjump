@@ -1,7 +1,7 @@
 {
   "name": "JumpJump",
   "description": "A game with Jumping",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "private": false,
   "dependencies": {},
   "happyFunTimes": {
