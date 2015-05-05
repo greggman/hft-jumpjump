@@ -40,10 +40,6 @@ html, body {
     user-select: none;
 }
 .button {
-    gbackground-color: #fff;
-    gcolor: #000;
-    gborder: 3px solid #444;
-    gborder-radius: 10px;
     width: 110px;
     height: 110px;
     text-align: center;
