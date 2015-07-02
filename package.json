@@ -2,7 +2,7 @@
   "dependencies": {},
   "description": "A game with Jumping",
   "happyFunTimes": {
-    "apiVersion": "1.12.0",
+    "apiVersion": "1.13.0",
     "category": "game",
     "gameId": "jumpjump",
     "gameType": "html",
