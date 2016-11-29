@@ -31,26 +31,28 @@
 "use strict";
 
 // Start the main app logic.
-requirejs(
-  [ 'hft/commonui',
-    'hft/gameclient',
-    'hft/misc/input',
-    'hft/misc/misc',
-    'hft/misc/mobilehacks',
-    'hft/misc/touch',
+requirejs([
+    '../node_modules/happyfuntimes/dist/hft',
+    '../node_modules/hft-sample-ui/dist/sample-ui',
+    '../node_modules/hft-game-utils/dist/game-utils',
     '../bower_components/hft-utils/dist/audio',
     '../bower_components/hft-utils/dist/imageloader',
     '../bower_components/hft-utils/dist/imageutils',
   ], function(
-    CommonUI,
-    GameClient,
-    Input,
-    Misc,
-    MobileHacks,
-    Touch,
+    hft,
+    sampleUI,
+    gameUtils,
     AudioManager,
     ImageLoader,
     ImageUtils) {
+
+  var GameClient = hft.GameClient;
+  var commonUI = sampleUI.commonUI;
+  var input = sampleUI.input;
+  var misc = sampleUI.misc;
+  var mobileHacks = sampleUI.mobileHacks;
+  var touch = sampleUI.touch;
+
   var g_client;
   var g_audioManager;
   var g_clock;
@@ -64,12 +66,12 @@ requirejs(
     debug: false,
     orientation: "landscape-primary",
   };
-  Misc.applyUrlSettings(globals);
-  MobileHacks.fixHeightHack();
-  MobileHacks.disableContextMenu();
-  MobileHacks.adjustCSSBasedOnPhone([
+  misc.applyUrlSettings(globals);
+  mobileHacks.fixHeightHack();
+  mobileHacks.disableContextMenu();
+  mobileHacks.adjustCSSBasedOnPhone([
     {
-      test: MobileHacks.isIOS8OrNewerAndiPhone4OrIPhone5,
+      test: mobileHacks.isIOS8OrNewerAndiPhone4OrIPhone5,
       styles: {
         ".button": {
           bottom: "100px",
@@ -112,7 +114,9 @@ requirejs(
     var sounds = {};
     g_audioManager = new AudioManager(sounds);
 
-    CommonUI.setupStandardControllerUI(g_client, globals);
+    commonUI.setupStandardControllerUI(g_client, globals);
+    commonUI.askForNameOnce();   // ask for the user's name if not set
+    commonUI.showMenu(true);     // shows the gear menu
 
     var handleLeftRight = function(pressed, bit) {
       g_leftRight = (g_leftRight & ~bit) | (pressed ? bit : 0);
@@ -134,12 +138,12 @@ requirejs(
     };
 
     var keys = { };
-    keys[Input.cursorKeys.kLeft]  = function(e) { handleLeftRight(e.pressed, 0x1); }
-    keys[Input.cursorKeys.kRight] = function(e) { handleLeftRight(e.pressed, 0x2); }
+    keys[input.cursorKeys.kLeft]  = function(e) { handleLeftRight(e.pressed, 0x1); }
+    keys[input.cursorKeys.kRight] = function(e) { handleLeftRight(e.pressed, 0x2); }
     keys["Z".charCodeAt(0)]       = function(e) { handleJump(e.pressed);           }
-    Input.setupKeys(keys);
+    input.setupKeys(keys);
 
-    Touch.setupButtons({
+    touch.setupButtons({
       inputElement: $("buttons"),
       buttons: [
         { element: $("left"),  callback: function(e) { handleLeftRight(e.pressed, 0x1); }, },

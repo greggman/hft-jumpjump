@@ -44,6 +44,7 @@ define(['./player'], function(Player) {
     var direction = misc.randInt(2) ? -1 : 1;
     var player = new Player(this.services, level.tileWidth, level.tileHeight, direction, name, netPlayer);
     this.players.push(player);
+    this.services.hideInstructions();
     return player;
   }
 

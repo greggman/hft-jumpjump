@@ -31,10 +31,12 @@
 "use strict";
 
 define([
-    'hft/misc/misc',
+    '../node_modules/hft-sample-ui/dist/sample-ui',
     '../bower_components/hft-utils/dist/2d',
   ], function(
-    Misc, M2D) {
+    sampleUI,
+    M2D) {
+  var Misc = sampleUI.misc;
 
   /**
    * Collectable represnt a collectable in the game.

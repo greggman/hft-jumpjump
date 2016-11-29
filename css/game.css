@@ -115,6 +115,7 @@ html, body {
 
 #outer {
   z-index: 4;
+  position: absolute;
   left: 0px;
   top: 0px;
   color: white;
@@ -122,4 +123,62 @@ html, body {
   font-weight: bolder;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
+
+
+#instruction {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+}
+#instruction .border {
+  background-color: #24C;
+  color: white;
+  border: 2em solid black;
+  border-radius: 2em;
+  padding: 1em;
+  margin: 3em;
+}
+#instruction .title {
+  font-size: 120px;
+  font-weight: bold;
+  text-align: center;
+}
+#instruction .title img {
+    width: 128px;
+}
+#instruction .subtitle {
+  font-size: xx-large;
+  font-weight: bold;
+  text-align: center;
+}
+#instruction .ins {
+  font-size: xx-large;
+  margin: 1em;
+}
+#instruction .ins .strong {
+  color: red;
+  font-weight: bold;
+}
+#instruction .ins .highlight {
+  color: #8AF;
+  font-weight: bold;
+}
+#instruction a {
+  text-decoration: none;
+  color: #C4F;
+}
+
+@media (max-width: 1200px) {
+    #instruction .title {
+        font-size: 80px;
+    }
+    #instruction .title img {
+        width: 64px;
+    }
+}
+
 

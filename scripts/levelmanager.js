@@ -31,15 +31,17 @@
 "use strict";
 
 define([
-    'hft/misc/misc',
+    '../node_modules/hft-sample-ui/dist/sample-ui',
     './level',
     './math',
     './tiles',
   ], function(
-    Misc,
+    sampleUI,
     Level,
     gmath,
     Tiles) {
+
+  var Misc = sampleUI.misc;
 
   var levels = [];
 

@@ -30,18 +30,22 @@
  */
 "use strict";
 
+const isDevMode = process.env.NODE_ENV === 'development';
+const requirejs = require('requirejs');
+requirejs.config({
+  nodeRequire: require,
+  baseUrl: __dirname,
+});
+
 function $(id) {
   return document.getElementById(id);
 }
 
 // Start the main app logic.
-requirejs(
-  [ 'hft/gameserver',
-    'hft/gamesupport',
-    'hft/localnetplayer',
-    'hft/misc/input',
-    'hft/misc/misc',
-    'hft/misc/strings',
+requirejs([
+    'happyfuntimes',
+    'hft-game-utils',
+    'hft-sample-ui',
     '../bower_components/tdl/tdl/textures',
     '../bower_components/tdl/tdl/webgl',
     '../bower_components/hft-utils/dist/audio',
@@ -51,6 +55,7 @@ requirejs(
     '../bower_components/hft-utils/dist/levelloader',
     '../bower_components/hft-utils/dist/spritemanager',
     './collectable',
+    './gamepad',
     './level',
     './levelmanager',
     './particleeffectmanager',
@@ -58,12 +63,9 @@ requirejs(
     './playermanager',
     './scoremanager',
   ], function(
-    GameServer,
-    GameSupport,
-    LocalNetPlayer,
-    Input,
-    Misc,
-    Strings,
+    happyfuntimes,
+    gameUtils,
+    sampleUI,
     Textures,
     WebGL,
     AudioManager,
@@ -73,12 +75,20 @@ requirejs(
     LevelLoader,
     SpriteManager,
     Collectable,
+    GamepadManager,
     Level,
     LevelManager,
     ParticleEffectManager,
     ParticleSystemManager,
     PlayerManager,
     ScoreManager) {
+  var GameServer = happyfuntimes.GameServer;
+  var LocalNetPlayer = happyfuntimes.LocalNetPlayer;
+  var gameSupport = gameUtils.gameSupport;
+  var input = sampleUI.input;
+  var misc = sampleUI.misc;
+  var strings = sampleUI.strings;
+
   var g_debug = false;
   var g_services = {};
 window.s = g_services;
@@ -89,10 +99,27 @@ window.s = g_services;
   g_services.drawSystem = g_drawSystem;
   var g_playerManager = new PlayerManager(g_services);
   g_services.playerManager = g_playerManager;
-  g_services.misc = Misc;
+  g_services.misc = misc;
   var g_scoreManager = new ScoreManager(g_services, $("score"));
   g_services.scoreManager = g_scoreManager;
   var stop = false;
+
+  const instructionElem = $("instruction");
+  instructionElem.addEventListener('click', hideInstructions);
+  instructionElem.addEventListener('touchstart', hideInstructions);
+  instructionElem.addEventListener('pointerdown', hideInstructions);
+  showInstructions();
+  $("outer").addEventListener('click', showInstructions);
+  $("outer").addEventListener('touchstart', showInstructions);
+  $("outer").addEventListener('pointerdown', showInstructions);
+
+  function hideInstructions() {
+    instructionElem.style.display = "none";
+  }
+  function showInstructions() {
+    instructionElem.style.display = "block";
+  }
+  g_services.hideInstructions = hideInstructions;
 
   // You can set these from the URL with
   // http://path/gameview.html?settings={name:value,name:value}
@@ -194,8 +221,8 @@ window.g = globals;
     }());
 
     var keys = { };
-    keys[Input.cursorKeys.kLeft]  = function(e) { handleLeftRight(0, e.pressed, 0x1); }
-    keys[Input.cursorKeys.kRight] = function(e) { handleLeftRight(0, e.pressed, 0x2); }
+    keys[input.cursorKeys.kLeft]  = function(e) { handleLeftRight(0, e.pressed, 0x1); }
+    keys[input.cursorKeys.kRight] = function(e) { handleLeftRight(0, e.pressed, 0x2); }
     keys["Z"]                     = function(e) { handleJump(0, e.pressed);           }
     keys["A"]                     = function(e) { handleLeftRight(1, e.pressed, 0x1); }
     keys["D"]                     = function(e) { handleLeftRight(1, e.pressed, 0x2); }
@@ -203,10 +230,10 @@ window.g = globals;
     keys["X"]                     = function(e) { handleTestSound(e.pressed);         }
     keys[187]                     = function(e) { addLocalPlayer();                   }
     keys[189]                     = function(e) { removeLocalPlayer(2);               }
-    Input.setupKeys(keys);
+    input.setupKeys(keys);
   }
 
-  Misc.applyUrlSettings(globals);
+  misc.applyUrlSettings(globals);
 
   var canvas = $("playfield");
   var gl = WebGL.setupWebGL(canvas, {alpha:false}, function() {});
@@ -233,7 +260,7 @@ window.g = globals;
 
 
   var resize = function() {
-    if (Misc.resize(canvas)) {
+    if (misc.resize(canvas)) {
       var level = chooseLevel(globals.levels, canvas.clientWidth, canvas.clientHeight);
       if (level !== globals.chosenLevel) {
         window.location.reload();
@@ -253,7 +280,7 @@ window.g = globals;
     s.pointerEvents = "none";
     document.body.appendChild(element);
     $("outer").addEventListener('mousemove', function(e) {
-      var pos = Input.getRelativeCoordinates(e.target, e);
+      var pos = input.getRelativeCoordinates(e.target, e);
       var level = g_levelManager.getLevel();
       var offset = level.getTransformOffset(levelCtx);
       var x = pos.x - offset.x;
@@ -351,7 +378,7 @@ window.g = globals;
       var playLevel;
       globals.level.layers.forEach(function(layer) {
         if (layer.name == "Tile Layer 1" ||
-            Strings.startsWith(layer.name.toLowerCase(), "play")) {
+            strings.startsWith(layer.name.toLowerCase(), "play")) {
           playLevel = layer;
         }
       });
@@ -385,6 +412,12 @@ window.g = globals;
         startLocalPlayers();
       }
 
+      // Add Gamepads
+      g_services.gamepadManager = new GamepadManager()
+      g_services.gamepadManager.on('playerconnect', (player, ndx) => {
+        g_playerManager.startPlayer(player, "GamePad" + (ndx + 1));
+      });
+
       g_services.particleEffectManager = new ParticleEffectManager(g_services);
       globals.coin = new Collectable(g_services);
 
@@ -394,8 +427,8 @@ window.g = globals;
         g_services.server = server;
         server.addEventListener('playerconnect', g_playerManager.startPlayer.bind(g_playerManager));
       }
-      GameSupport.init(server, globals);
-      GameSupport.run(globals, mainloop);
+      gameSupport.init(server, globals);
+      gameSupport.run(globals, mainloop);
     }
   };
 
@@ -403,6 +436,7 @@ window.g = globals;
 
   var mainloop = function() {
     resize();
+    g_services.gamepadManager.process();
     g_services.levelManager.getDrawOffset(globals.drawOffset);
     g_services.entitySystem.processEntities();
 

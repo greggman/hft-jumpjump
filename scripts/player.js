@@ -31,15 +31,16 @@
 "use strict";
 
 define([
-    'hft/misc/misc',
-    'hft/misc/strings',
+    '../node_modules/hft-sample-ui/dist/sample-ui',
     '../bower_components/hft-utils/dist/2d',
     '../bower_components/hft-utils/dist/imageutils',
   ], function(
-    Misc,
-    Strings,
+    sampleUI,
     M2D,
     ImageUtils) {
+  var Misc = sampleUI.misc;
+  var Strings = sampleUI.strings;
+  const PlayerNameManager = sampleUI.PlayerNameManager;
 
   var availableColors = [];
   var nameFontOptions = {
@@ -90,12 +91,14 @@ window.p = this;
 
       this.sprite = this.services.spriteManager.createSprite();
       this.nameSprite = this.services.spriteManager.createSprite();
+      this.playerNameManager = new PlayerNameManager(netPlayer);
 
       netPlayer.addEventListener('disconnect', Player.prototype.handleDisconnect.bind(this));
       netPlayer.addEventListener('move', Player.prototype.handleMoveMsg.bind(this));
       netPlayer.addEventListener('jump', Player.prototype.handleJumpMsg.bind(this));
-      netPlayer.addEventListener('setName', Player.prototype.handleNameMsg.bind(this));
-      netPlayer.addEventListener('busy', Player.prototype.handleBusyMsg.bind(this));
+
+      this.playerNameManager.on('setName', Player.prototype.handleNameMsg.bind(this));
+      this.playerNameManager.on('busy', Player.prototype.handleBusyMsg.bind(this));
 
       this.setName(name);
       this.direction = 0;         // direction player is pushing (-1, 0, 1)
@@ -199,14 +202,8 @@ window.p = this;
     }
   };
 
-  Player.prototype.handleNameMsg = function(msg) {
-    if (!msg.name) {
-      this.sendCmd('setName', {
-        name: this.playerName
-      });
-    } else {
-      this.setName(msg.name.replace(/[<>]/g, ''));
-    }
+  Player.prototype.handleNameMsg = function(name) {
+    this.setName(name.replace(/[<>]/g, ''));
   };
 
   Player.prototype.sendCmd = function(cmd, data) {
