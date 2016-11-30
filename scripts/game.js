@@ -408,7 +408,7 @@ window.g = globals;
       resize();
 
       // Add a 2 players if there is no communication
-      if (!globals.haveServer) {
+      if (!globals.haveServer || isDevMode) {
         startLocalPlayers();
       }
 
