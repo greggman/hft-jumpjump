@@ -121,10 +121,7 @@ window.s = g_services;
   }
   g_services.hideInstructions = hideInstructions;
 
-  // You can set these from the URL with
-  // http://path/gameview.html?settings={name:value,name:value}
   var globals = {
-    haveServer: true,
     numLocalPlayers: 1,  // num players when local (ie, debugger)
     debug: false,
     tileInspector: false,
@@ -407,8 +404,7 @@ window.g = globals;
       resetGame();
       resize();
 
-      // Add a 2 players if there is no communication
-      if (!globals.haveServer || isDevMode) {
+      if (isDevMode) {
         startLocalPlayers();
       }
 
@@ -421,12 +417,10 @@ window.g = globals;
       g_services.particleEffectManager = new ParticleEffectManager(g_services);
       globals.coin = new Collectable(g_services);
 
-      var server;
-      if (globals.haveServer) {
-        var server = new GameServer();
-        g_services.server = server;
-        server.addEventListener('playerconnect', g_playerManager.startPlayer.bind(g_playerManager));
-      }
+      var server = new GameServer();
+      g_services.server = server;
+      server.on('playerconnect', g_playerManager.startPlayer.bind(g_playerManager));
+
       gameSupport.init(server, globals);
       gameSupport.run(globals, mainloop);
     }

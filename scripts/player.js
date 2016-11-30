@@ -93,9 +93,9 @@ window.p = this;
       this.nameSprite = this.services.spriteManager.createSprite();
       this.playerNameManager = new PlayerNameManager(netPlayer);
 
-      netPlayer.addEventListener('disconnect', Player.prototype.handleDisconnect.bind(this));
-      netPlayer.addEventListener('move', Player.prototype.handleMoveMsg.bind(this));
-      netPlayer.addEventListener('jump', Player.prototype.handleJumpMsg.bind(this));
+      netPlayer.on('disconnect', Player.prototype.handleDisconnect.bind(this));
+      netPlayer.on('move', Player.prototype.handleMoveMsg.bind(this));
+      netPlayer.on('jump', Player.prototype.handleJumpMsg.bind(this));
 
       this.playerNameManager.on('setName', Player.prototype.handleNameMsg.bind(this));
       this.playerNameManager.on('busy', Player.prototype.handleBusyMsg.bind(this));

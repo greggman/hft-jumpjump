@@ -107,9 +107,9 @@ requirejs([
       ctx.drawImage(frame, 0, 0, ctx.canvas.width, ctx.canvas.height);
     };
 
-    g_client.addEventListener('score', handleScore);
-    g_client.addEventListener('die', handleDeath);
-    g_client.addEventListener('setColor', handleSetColor);
+    g_client.on('score', handleScore);
+    g_client.on('die', handleDeath);
+    g_client.on('setColor', handleSetColor);
 
     var sounds = {};
     g_audioManager = new AudioManager(sounds);
