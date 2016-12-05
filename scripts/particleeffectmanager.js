@@ -32,11 +32,11 @@
 
 define([
     '../node_modules/hft-sample-ui/dist/sample-ui',
-    '../bower_components/hft-utils/dist/imageutils',
-    '../bower_components/tdl/tdl/fast',
-    '../bower_components/tdl/tdl/math',
-    '../bower_components/tdl/tdl/particles',
-    '../bower_components/tdl/tdl/textures',
+    '../3rdparty/hft-utils/dist/imageutils',
+    '../3rdparty/tdl/tdl/fast',
+    '../3rdparty/tdl/tdl/math',
+    '../3rdparty/tdl/tdl/particles',
+    '../3rdparty/tdl/tdl/textures',
   ], function(
     sampleUI,
     ImageUtils,

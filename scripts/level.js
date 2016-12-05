@@ -31,7 +31,7 @@
 "use strict";
 
 define([
-    '../bower_components/hft-utils/dist/tilemap',
+    '../3rdparty/hft-utils/dist/tilemap',
   ], function(
     TileMap) {
 

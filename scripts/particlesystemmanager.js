@@ -31,9 +31,9 @@
 "use strict";
 
 define(
-  [ '../bower_components/tdl/tdl/fast',
-    '../bower_components/tdl/tdl/math',
-    '../bower_components/tdl/tdl/particles',
+  [ '../3rdparty/tdl/tdl/fast',
+    '../3rdparty/tdl/tdl/math',
+    '../3rdparty/tdl/tdl/particles',
   ], function(
     Fast,
     Maths,

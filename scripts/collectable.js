@@ -32,7 +32,7 @@
 
 define([
     '../node_modules/hft-sample-ui/dist/sample-ui',
-    '../bower_components/hft-utils/dist/2d',
+    '../3rdparty/hft-utils/dist/2d',
   ], function(
     sampleUI,
     M2D) {

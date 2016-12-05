@@ -32,8 +32,8 @@
 
 define([
     '../node_modules/hft-sample-ui/dist/sample-ui',
-    '../bower_components/hft-utils/dist/2d',
-    '../bower_components/hft-utils/dist/imageutils',
+    '../3rdparty/hft-utils/dist/2d',
+    '../3rdparty/hft-utils/dist/imageutils',
   ], function(
     sampleUI,
     M2D,
